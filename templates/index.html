@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Real-Time Weed Detection</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS for colorful styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding-top: 20px;
+            background: linear-gradient(135deg, #c9ffbf, #ffafbd);  
+            color: #fff;
+            margin: 0;
+            padding: 0;
+            margin-top: 10px;
+        }
+        h1, h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 8px;  
+        }
+        .container-fluid {
+            max-width: 1200px; 
+            margin-top: 12px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .video-feed {
+            flex-basis: calc(50% - 4px); 
+            background-color: rgba(0, 0, 0, 0.6);  
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-right: 4px; 
+        }
+        .upload-section {
+            flex-basis: calc(50% - 4px); 
+            background-color: rgba(0, 0, 0, 0.6);  
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-left: 4px; 
+            text-align: center;
+        }
+        img {
+            border: 3px solid #fff;
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        .form-control-file {
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 18px;
+            margin-top: 10px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: gray;
+        }
+        @media screen and (max-width: 768px) {
+            .row {
+                flex-direction: column; 
+            }
+            .video-feed, .upload-section {
+                flex-basis: 100%; 
+                margin: 0; 
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">Real-Time Weed Detection</a>
+            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Help</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col-md-6 col-12 video-feed">
+                <h1>Real-Time Weed Detection</h1>
+                <div>
+                    <img id="videoFeed" src="" alt="Video Feed" class="img-fluid">
+                </div>
+                <button class="btn" id="startDetectionBtn">Start Real-Time Detection</button>
+                <button class="btn" id="stopDetectionBtn" style="display: none;">Stop Real-Time Detection</button>
+            </div>
+
+            <div class="col-md-6 col-12 upload-section">
+                <h2>Upload an Image</h2>
+                <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
+                    <input type="file" name="file" class="form-control-file" accept="image/*" required>
+                    <br>
+                    <button type="submit" class="btn">Upload</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Camera Selection -->
+        <div class="row" style="justify-content: center;">
+            <label for="cameraSelect">Select Camera:</label>
+            <select id="cameraSelect">
+                <option value="back">Back Camera</option>
+                <option value="front">Front Camera</option>
+            </select>
+        </div>
+        
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Real-Time Weed Detection. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const videoFeed = document.getElementById('videoFeed');
+        const startDetectionBtn = document.getElementById('startDetectionBtn');
+        const stopDetectionBtn = document.getElementById('stopDetectionBtn');
+        const cameraSelect = document.getElementById('cameraSelect');
+        let streamInterval;
+
+        // Function to start real-time detection
+        function startRealTimeDetection() {
+            const selectedCamera = cameraSelect.value;
+            videoFeed.src = `/video_feed/${selectedCamera}`;
+            startDetectionBtn.style.display = 'none';
+            stopDetectionBtn.style.display = 'block';
+        }
+
+        // Function to stop real-time detection
+        function stopRealTimeDetection() {
+            videoFeed.src = '';
+            startDetectionBtn.style.display = 'block';
+            stopDetectionBtn.style.display = 'none';
+        }
+
+        // Event listeners
+        startDetectionBtn.addEventListener('click', startRealTimeDetection);
+        stopDetectionBtn.addEventListener('click', stopRealTimeDetection);
+    </script>
+</body>
+</html>
