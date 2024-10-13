@@ -1,9 +1,13 @@
 import cv2
 import numpy as np
-from flask import Flask, render_template, Response, request, send_file
+from flask import Flask, render_template, Response, request, send_file, jsonify
 from flask_cors import CORS
 from ultralytics import YOLO
 from io import BytesIO
+import base64
+from PIL import Image
+
+
 
 app = Flask(__name__)
 CORS(app)  # Allow CORS for all domains
@@ -38,6 +42,30 @@ def detect_weeds(frame):
 
     return frame
 
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    if 'file' not in request.files:
+        return "No file part", 400
+
+    file = request.files['file']
+    
+    if file and allowed_file(file.filename):
+        # Read image into memory
+        file_bytes = np.frombuffer(file.read(), np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+        # Detect weeds in the uploaded frame
+        output_image = detect_weeds(img)
+
+        # Encode the output image to JPEG
+        _, buffer = cv2.imencode('.jpg', output_image)
+        io_buf = BytesIO(buffer)
+
+        # Send the processed image back to the client
+        return send_file(io_buf, mimetype='image/jpeg')
+
+    return "Invalid file type", 400
+
 # Route to handle image uploads for weed detection
 @app.route('/upload', methods=['POST'])
 def upload_image():
@@ -66,7 +94,7 @@ def upload_image():
 # Main route to render the HTML template
 @app.route('/')
 def index():
-    return render_template('index2.html')
+    return render_template('index3.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
