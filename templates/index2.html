@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weed Detection</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+        }
+        #video-container {
+            margin: 20px auto;
+            max-width: 800px;
+            border: 1px solid #ccc;
+            background: #fff;
+        }
+        #video-feed {
+            width: 100%;
+        }
+        #upload-section {
+            margin-top: 20px;
+        }
+        #retry-button {
+            display: none;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Weed Detection App</h1>
+
+    <div id="video-container">
+        <h2>Live Video Feed</h2>
+        <video id="video-feed" autoplay playsinline></video>
+    </div>
+
+    <div id="upload-section">
+        <h2>Upload an Image for Detection</h2>
+        <input type="file" id="file-input" accept="image/*">
+        <button id="upload-button">Upload</button>
+        <div id="output-container" style="margin-top: 20px;"></div>
+    </div>
+
+    <button id="retry-button">Retry Camera Access</button>
+
+    <script>
+        async function startCamera() {
+            const constraints = {
+                video: {
+                    facingMode: 'environment' // Use 'user' for front camera, 'environment' for back camera
+                }
+            };
+
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('video-feed');
+                video.srcObject = stream;
+                video.play();
+                document.getElementById('retry-button').style.display = 'none'; // Hide retry button
+            } catch (error) {
+                console.error('Error accessing the camera: ', error);
+                alert('Unable to access the camera. Please check permissions.');
+                document.getElementById('retry-button').style.display = 'block'; // Show retry button
+            }
+        }
+
+        async function checkCameraPermissions() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                // If the user grants permission, stop the stream and start the camera
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                startCamera();
+            } catch (error) {
+                console.error('Camera permission not granted yet: ', error);
+                // If permission is denied, inform the user
+                alert('Please allow camera access in your browser settings.');
+            }
+        }
+
+        window.onload = () => {
+            startCamera();
+        };
+
+        const retryButton = document.getElementById('retry-button');
+        retryButton.addEventListener('click', checkCameraPermissions);
+
+        const uploadButton = document.getElementById('upload-button');
+        const fileInput = document.getElementById('file-input');
+        const outputContainer = document.getElementById('output-container');
+
+        uploadButton.addEventListener('click', async () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('Please select an image to upload');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    throw new Error('Failed to upload image');
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                outputContainer.innerHTML = `<h3>Detection Result:</h3><img src="${url}" alt="Detected Image" style="max-width: 100%;">`;
+            } catch (error) {
+                console.error(error);
+                alert('An error occurred while uploading the image');
+            }
+        });
+    </script>
+</body>
+</html>

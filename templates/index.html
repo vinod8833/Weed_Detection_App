@@ -115,8 +115,17 @@
                 <div>
                     <img id="videoFeed" src="" alt="Video Feed" class="img-fluid">
                 </div>
+                <div class="row" style="justify-content: center;">
+                    <label for="cameraSelect">Select Camera:</label>
+                    <select id="cameraSelect">
+                        <option value="back">Back Camera</option>
+                        <option value="front">Front Camera</option>
+                    </select>
+                </div>
+                
                 <button class="btn" id="startDetectionBtn">Start Real-Time Detection</button>
                 <button class="btn" id="stopDetectionBtn" style="display: none;">Stop Real-Time Detection</button>
+       
             </div>
 
             <div class="col-md-6 col-12 upload-section">
@@ -129,14 +138,7 @@
             </div>
         </div>
 
-        <!-- Camera Selection -->
-        <div class="row" style="justify-content: center;">
-            <label for="cameraSelect">Select Camera:</label>
-            <select id="cameraSelect">
-                <option value="back">Back Camera</option>
-                <option value="front">Front Camera</option>
-            </select>
-        </div>
+       
         
     </div>
 

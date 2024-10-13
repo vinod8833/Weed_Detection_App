@@ -1,0 +1,14 @@
+services:
+  - type: web  # Defines a web service
+    name: flask-app  # Name of your app
+    env: python  # Environment for the service
+    buildCommand: pip install -r requirements.txt  # Install dependencies from requirements file
+    startCommand: gunicorn app:app  # Start the Flask app with Gunicorn
+    plan: free  # You can choose 'free', 'starter', etc.
+    envVars:  # Environment variables, such as for a database URL or secret keys
+      - key: FLASK_ENV
+        value: production
+      - key: SECRET_KEY
+        value: your-secret-key
+    healthCheckPath: /  # The path for the health check, often the root route
+    autoDeploy: true  # Automatically deploy when new changes are pushed
