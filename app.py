@@ -1,13 +1,9 @@
+from flask import Flask, request, jsonify, render_template
 import cv2
 import numpy as np
-from flask import Flask, render_template, Response, request, send_file, jsonify
+import base64
 from flask_cors import CORS
 from ultralytics import YOLO
-from io import BytesIO
-import base64
-from PIL import Image
-
-
 
 app = Flask(__name__)
 CORS(app)  # Allow CORS for all domains
@@ -22,7 +18,7 @@ ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Weed detection function for image upload
+# Weed detection function
 def detect_weeds(frame):
     # Convert to RGB for YOLO processing
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -42,59 +38,33 @@ def detect_weeds(frame):
 
     return frame
 
-@app.route('/process_frame', methods=['POST'])
-def process_frame():
-    if 'file' not in request.files:
-        return "No file part", 400
-
-    file = request.files['file']
-    
-    if file and allowed_file(file.filename):
-        # Read image into memory
-        file_bytes = np.frombuffer(file.read(), np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-
-        # Detect weeds in the uploaded frame
-        output_image = detect_weeds(img)
-
-        # Encode the output image to JPEG
-        _, buffer = cv2.imencode('.jpg', output_image)
-        io_buf = BytesIO(buffer)
-
-        # Send the processed image back to the client
-        return send_file(io_buf, mimetype='image/jpeg')
-
-    return "Invalid file type", 400
-
-# Route to handle image uploads for weed detection
-@app.route('/upload', methods=['POST'])
-def upload_image():
-    if 'file' not in request.files:
-        return "No file part", 400
-
-    file = request.files['file']
-    
-    if file and allowed_file(file.filename):
-        # Read image into memory
-        file_bytes = np.frombuffer(file.read(), np.uint8)
-        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
-
-        # Detect weeds in the uploaded image
-        output_image = detect_weeds(img)
-
-        # Encode the output image to JPEG
-        _, buffer = cv2.imencode('.jpg', output_image)
-        io_buf = BytesIO(buffer)
-
-        # Send the processed image back to the client
-        return send_file(io_buf, mimetype='image/jpeg')
-
-    return "Invalid file type", 400
-
-# Main route to render the HTML template
 @app.route('/')
 def index():
-    return render_template('index3.html')
+    return render_template('indext.html')
+
+@app.route('/process_frame', methods=['POST'])
+def process_frame():
+    try:
+        # Get the JSON data from the POST request
+        data = request.json
+
+        # Decode the base64 image data to get the video frame
+        image_data = base64.b64decode(data['frame'])
+        np_image = np.frombuffer(image_data, np.uint8)
+        frame = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
+
+        # Detect weeds in the frame
+        processed_frame = detect_weeds(frame)
+
+        # Encode the processed frame back to base64
+        _, buffer = cv2.imencode('.jpg', processed_frame)
+        processed_frame_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        # Return the processed frame as JSON
+        return jsonify({'processed_frame': processed_frame_base64})
+
+    except Exception as e:
+        return jsonify({'error': str(e)})
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)

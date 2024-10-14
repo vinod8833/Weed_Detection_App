@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real-Time Weed Detection</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Custom CSS for colorful styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding-top: 20px;
+            background: linear-gradient(135deg, #c9ffbf, #ffafbd);
+            color: #fff;
+            margin: 0;
+            padding: 0;
+        }
+        h1, h2 {
+            color: #fff;
+            text-align: center;
+            margin-bottom: 8px;
+        }
+        .container-fluid {
+            max-width: 1200px;
+            margin-top: 12px;
+        }
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .video-feed {
+            flex-basis: calc(50% - 4px);
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-right: 4px;
+        }
+        .upload-section {
+            flex-basis: calc(50% - 4px);
+            background-color: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+            margin-left: 4px;
+            text-align: center;
+        }
+        img {
+            border: 3px solid #fff;
+            width: 100%;
+            max-width: 100%;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+        }
+        .form-control-file {
+            background-color: #fff;
+            color: #333;
+            border: none;
+            border-radius: 18px;
+            margin-top: 10px;
+            padding: 10px;
+        }
+        .btn {
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        footer {
+            margin-top: 60px;
+            text-align: center;
+            color: gray;
+        }
+        @media screen and (max-width: 768px) {
+            .row {
+                flex-direction: column;
+            }
+            .video-feed, .upload-section {
+                flex-basis: 100%;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">🌿 🌾 Weed Detection Application</a>
+            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Contacts</button>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container-fluid">
+        
+        <div class="row">
+            <div class="col-md-6 col-12 video-feed">
+                <h1>Real-Time Weed Detection</h1>
+                <video id="videoFeed" class="img-fluid" autoplay playsinline style="display:None"></video>
+                <button class="btn" id="startStreamBtn">Start Video Stream</button>
+                <button class="btn" id="stopStreamBtn" style="display: none;">Stop Video Stream</button>
+                <div id="output-container" style="margin-top: 20px;"></div>
+            </div>
+
+            <div id="upload-section" class="col-md-6 col-12 upload-section">
+                <h2>Upload an Image for Detection</h2>
+                <input type="file" id="file-input" class="form-control-file" accept="image/*">
+                <button id="upload-button" class="btn">Upload</button>
+                <div id="detection-result" style="margin-top: 20px;"></div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Real-Time Weed Detection. All rights reserved.</p>
+    </footer>
+
+    <script>
+        const videoFeed = document.getElementById('videoFeed');
+        const startStreamBtn = document.getElementById('startStreamBtn');
+        const stopStreamBtn = document.getElementById('stopStreamBtn');
+        let stream;
+        let intervalId;
+
+        function startVideoStream() {
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(s => {
+                    stream = s;
+                    videoFeed.srcObject = stream;
+                    startStreamBtn.style.display = 'none';
+                    stopStreamBtn.style.display = 'block';
+                    captureFrames();
+                })
+                .catch(err => {
+                    console.error("Error accessing the camera: ", err);
+                    alert('Unable to access the camera. Please check permissions.');
+                });
+        }
+
+        function stopVideoStream() {
+            if (stream) {
+                const tracks = stream.getTracks();
+                tracks.forEach(track => track.stop());
+                videoFeed.srcObject = null;
+            }
+            clearInterval(intervalId);
+            startStreamBtn.style.display = 'block';
+            stopStreamBtn.style.display = 'none';
+        }
+
+        function captureFrames() {
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = 640;
+            canvas.height = 480;
+
+            intervalId = setInterval(() => {
+                context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+                canvas.toBlob(blob => {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        fetch('/process_frame', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({ frame: reader.result.split(',')[1] }) // Extract base64 part
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.processed_frame) {
+                                const outputContainer = document.getElementById('output-container');
+                                outputContainer.innerHTML = '<img src="data:image/jpeg;base64,' + data.processed_frame + '" />';
+                            }
+                        })
+                        .catch(error => console.error('Error processing frame:', error));
+                    }
+                    reader.readAsDataURL(blob);
+                }, 'image/jpeg', 0.8); // Change quality if needed
+            }, 1000); // Capture frame every 100ms
+        }
+
+        startStreamBtn.addEventListener('click', startVideoStream);
+        stopStreamBtn.addEventListener('click', stopVideoStream);
+
+        // Image upload functionality
+        const fileInput = document.getElementById('file-input');
+        const uploadButton = document.getElementById('upload-button');
+        const detectionResult = document.getElementById('detection-result');
+
+        uploadButton.addEventListener('click', () => {
+            const file = fileInput.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    fetch('/process_frame', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({ frame: reader.result.split(',')[1] }) // Extract base64 part
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.processed_frame) {
+                            detectionResult.innerHTML = '<img src="data:image/jpeg;base64,' + data.processed_frame + '" />';
+                        } else if (data.error) {
+                            detectionResult.innerHTML = '<p>Error: ' + data.error + '</p>';
+                        }
+                    })
+                    .catch(error => console.error('Error processing image:', error));
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+    
+</body>
+</html>
