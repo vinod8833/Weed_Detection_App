@@ -4,6 +4,8 @@ import numpy as np
 import base64
 from flask_cors import CORS
 from ultralytics import YOLO
+import ssl
+
 
 app = Flask(__name__)
 CORS(app)  # Allow CORS for all domains
@@ -66,5 +68,16 @@ def process_frame():
     except Exception as e:
         return jsonify({'error': str(e)})
 
+# if __name__ == '__main__':
+#     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+#     context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+
+#     app.run(host='0.0.0.0',ssl_context=context, debug=True)
+    
+
+
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True)
+    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
+    context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
+    app.run(ssl_context=context, host='0.0.0.0', port=5000)
+
