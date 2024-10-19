@@ -1,83 +1,79 @@
-from flask import Flask, request, jsonify, render_template
 import cv2
 import numpy as np
-import base64
+from flask import Flask, render_template, Response, request, send_file, jsonify
 from flask_cors import CORS
 from ultralytics import YOLO
-import ssl
-
+import base64
 
 app = Flask(__name__)
-CORS(app)  # Allow CORS for all domains
+CORS(app)
 
-# Load YOLO model
-model = YOLO('weed_detect.pt')  # Replace with your own model path
+model = YOLO('weed_detect.pt')
 
-# Allowed image extensions
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg'}
 
-# Function to check file type
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
-# Weed detection function
 def detect_weeds(frame):
     # Convert to RGB for YOLO processing
     img_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
 
-    # Run YOLO model for weed detection
     results = model(img_rgb)
+
+    crop_count = 0
+    weed_count = 0
 
     # Draw detections on the frame
     for result in results:
         for box in result.boxes:
             x1, y1, x2, y2 = map(int, box.xyxy[0])
-            label = result.names[int(box.cls[0])]  # Get label name
+            label = result.names[int(box.cls[0])]
             confidence = box.conf[0].item()
-            cv2.rectangle(frame, (x1, y1), (x2, y2), (0, 255, 0), 2)
-            cv2.putText(frame, f'{label} {confidence:.2f}', (x1, y1 - 10),
-                        cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
 
-    return frame
+            if label == "crop":
+                color = (0, 255, 0)
+                crop_count += 1
+            else:
+                color = (0, 0, 255)
+                weed_count += 1
+
+            # Draw bounding box and label on the frame
+            cv2.rectangle(frame, (x1, y1), (x2, y2), color, 2)
+            cv2.putText(frame, f'{label} {confidence:.2f}', (x1, y1 - 10),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.5, color, 2)
+    
+    return frame, crop_count, weed_count
+
+
+@app.route('/upload_image', methods=['POST'])
+def upload_image():
+    if 'file' not in request.files:
+        return "No file part", 400
+
+    file = request.files['file']
+    
+    if file and allowed_file(file.filename):
+        file_bytes = np.frombuffer(file.read(), np.uint8)
+        img = cv2.imdecode(file_bytes, cv2.IMREAD_COLOR)
+
+        output_image, crop_count, weed_count  = detect_weeds(img)
+        _, buffer = cv2.imencode('.jpg', output_image)
+        image_base64 = base64.b64encode(buffer).decode('utf-8')
+
+        response_data = {
+            'image': image_base64,
+            'crop_count': crop_count,
+            'weed_count': weed_count
+        }
+        print(f"response weed_count {weed_count} crop_count {crop_count}")
+        return jsonify(response_data)
+    else:
+        return "Invalid file type", 400
 
 @app.route('/')
 def index():
-    return render_template('indext.html')
-
-@app.route('/process_frame', methods=['POST'])
-def process_frame():
-    try:
-        # Get the JSON data from the POST request
-        data = request.json
-
-        # Decode the base64 image data to get the video frame
-        image_data = base64.b64decode(data['frame'])
-        np_image = np.frombuffer(image_data, np.uint8)
-        frame = cv2.imdecode(np_image, cv2.IMREAD_COLOR)
-
-        # Detect weeds in the frame
-        processed_frame = detect_weeds(frame)
-
-        # Encode the processed frame back to base64
-        _, buffer = cv2.imencode('.jpg', processed_frame)
-        processed_frame_base64 = base64.b64encode(buffer).decode('utf-8')
-
-        # Return the processed frame as JSON
-        return jsonify({'processed_frame': processed_frame_base64})
-
-    except Exception as e:
-        return jsonify({'error': str(e)})
-
-# if __name__ == '__main__':
-#     context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-#     context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
-
-#     app.run(host='0.0.0.0',ssl_context=context, debug=True)
-    
-
+    return render_template('index.html')
 
 if __name__ == '__main__':
-    context = ssl.SSLContext(ssl.PROTOCOL_TLS_SERVER)
-    context.load_cert_chain(certfile='cert.pem', keyfile='key.pem')
-    app.run(ssl_context=context, host='0.0.0.0', port=5000)
-
+    app.run(host='0.0.0.0', debug=True)

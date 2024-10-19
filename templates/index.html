@@ -18,7 +18,6 @@
             color: #fff;
             margin: 0;
             padding: 0;
-            margin-top: 10px;
         }
         h1, h2 {
             color: #fff;
@@ -101,8 +100,8 @@
     <!-- Navbar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container">
-            <a class="navbar-brand" href="#">Real-Time Weed Detection</a>
-            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">Help</button>
+            <a class="navbar-brand" href="#">🌿 🌾 Weed Detection Application</a>
+            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">contacts</button>
         </div>
     </nav>
 
@@ -113,64 +112,220 @@
             <div class="col-md-6 col-12 video-feed">
                 <h1>Real-Time Weed Detection</h1>
                 <div>
-                    <img id="videoFeed" src="" alt="Video Feed" class="img-fluid">
+                    <video id="videoFeed" class="img-fluid" autoplay playsinline></video>
                 </div>
-                <div class="row" style="justify-content: center;">
-                    <label for="cameraSelect">Select Camera:</label>
-                    <select id="cameraSelect">
-                        <option value="back">Back Camera</option>
-                        <option value="front">Front Camera</option>
-                    </select>
-                </div>
-                
                 <button class="btn" id="startDetectionBtn">Start Real-Time Detection</button>
                 <button class="btn" id="stopDetectionBtn" style="display: none;">Stop Real-Time Detection</button>
-       
             </div>
 
-            <div class="col-md-6 col-12 upload-section">
-                <h2>Upload an Image</h2>
-                <form id="uploadForm" action="/upload" method="post" enctype="multipart/form-data">
-                    <input type="file" name="file" class="form-control-file" accept="image/*" required>
-                    <br>
-                    <button type="submit" class="btn">Upload</button>
-                </form>
+            <div id="upload-section"  class="col-md-6 col-12 upload-section">
+                <h2>Upload an Image for Detection</h2>
+                <input type="file" id="file-input"  class="form-control-file" accept="image/*">
+                <button id="upload-button" class="btn">Upload</button>
+                <div id="output-container" style="margin-top: 20px;"></div>
             </div>
         </div>
-
-       
-        
     </div>
 
     <footer>
         <p>&copy; 2024 Real-Time Weed Detection. All rights reserved.</p>
     </footer>
+  <script>
+    const uploadButton = document.getElementById('upload-button');
+    const fileInput = document.getElementById('file-input');
+    const outputContainer = document.getElementById('output-container');
 
-    <script>
-        const videoFeed = document.getElementById('videoFeed');
-        const startDetectionBtn = document.getElementById('startDetectionBtn');
-        const stopDetectionBtn = document.getElementById('stopDetectionBtn');
-        const cameraSelect = document.getElementById('cameraSelect');
-        let streamInterval;
+        
+    const videoFeed = document.getElementById('videoFeed');
+    const startDetectionBtn = document.getElementById('startDetectionBtn');
+    const stopDetectionBtn = document.getElementById('stopDetectionBtn');
+    let stream;
+    let intervalId;
 
-        // Function to start real-time detection
-        function startRealTimeDetection() {
-            const selectedCamera = cameraSelect.value;
-            videoFeed.src = `/video_feed/${selectedCamera}`;
+    function speakText(text) {
+        // Check if the browser supports SpeechSynthesis API
+        if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+    
+            // Set speech parameters (optional)
+            utterance.rate = 1;     // Speed (0.1 to 10)
+            utterance.pitch = 1;    // Pitch (0 to 2)
+            utterance.volume = 1;   // Volume (0 to 1)
+    
+            // Speak the text
+            speechSynthesis.speak(utterance);
+    
+            // Add event listener for when the speech ends
+            utterance.onend = function() {
+                console.log("Speech has ended");
+            };
+    
+        } else {
+            console.log("Sorry, your browser does not support speech synthesis.");
+        }
+    }
+
+
+    async function upload_image(file){
+        const formData = new FormData();
+        formData.append('file', file, 'frame.jpg');
+
+        try {
+            const response = await fetch('/upload_image', {
+                method: 'POST',
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to upload image');
+            }
+
+            const jsonResponse = await response.json();
+            const processedImageBase64 = jsonResponse.image;
+            const cropCount = jsonResponse.crop_count;
+            const weedCount = jsonResponse.weed_count;
+
+            console.log('Crops detected:', cropCount);
+            console.log('Weeds detected:', weedCount);
+
+            if (cropCount > 0) {
+               // const cropSound = new Audio('/static/audio/crop.mp3');  // Adjust the path
+               // cropSound.play();
+                speakText(`Total ${cropCount} weeds detected`);
+
+            }
+            
+            if (weedCount > 0) {
+                //const weedSound = new Audio('/static/audio/weed.mp3');
+               // weedSound.play();
+
+                speakText(`Total ${weedCount} weeds detected`);
+            }
+
+            // Convert Base64 image to Blob and display on canvas
+            const processedImageBlob = await fetch(`data:image/jpeg;base64,${processedImageBase64}`).then(res => res.blob());
+            const url = URL.createObjectURL(processedImageBlob);
+            return url;
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred while uploading the image');
+        }
+        
+    }
+
+
+    async function startRealTimeDetection() {
+        const constraints = {
+            video: {
+                facingMode: 'environment' // Use 'user' for front camera, 'environment' for back camera
+            }
+        };
+
+        try {
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+            videoFeed.srcObject = stream;
             startDetectionBtn.style.display = 'none';
             stopDetectionBtn.style.display = 'block';
+
+            sendVideoFrames();
+        } catch (error) {
+            console.error('Error accessing the camera: ', error);
+            alert('Unable to access the camera. Please check permissions.');
+        }
+    }
+
+    function stopRealTimeDetection() {
+        if (stream) {
+            const tracks = stream.getTracks();
+            tracks.forEach(track => track.stop());
+            videoFeed.srcObject = null;
+        }
+        clearInterval(intervalId);
+        startDetectionBtn.style.display = 'block';
+        stopDetectionBtn.style.display = 'none';
+    }
+
+
+    function sendVideoFrames() {
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+        
+        // Create another canvas for the transformed image
+        const outputCanvas = document.createElement('canvas');
+        const outputContext = outputCanvas.getContext('2d');
+
+        // Set the canvas size according to the video dimensions
+        function updateCanvasSize() {
+            canvas.width = videoFeed.videoWidth || 640;
+            canvas.height = videoFeed.videoHeight || 480;
+
+            // Set the output canvas to the same size
+            outputCanvas.width = canvas.width;
+            outputCanvas.height = canvas.height;
         }
 
-        // Function to stop real-time detection
-        function stopRealTimeDetection() {
-            videoFeed.src = '';
-            startDetectionBtn.style.display = 'block';
-            stopDetectionBtn.style.display = 'none';
+        // Call this once to set the initial size
+        updateCanvasSize();
+
+        intervalId = setInterval(async () => {
+            // Check if video is playing and the dimensions are available
+            if (!videoFeed.paused && !videoFeed.ended && videoFeed.videoWidth > 0 && videoFeed.videoHeight > 0) {
+                context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
+                
+                // Create a blob from the canvas
+                const blob = await new Promise((resolve, reject) => {
+                    canvas.toBlob((b) => {
+                        if (b) {
+                            resolve(b);
+                        } else {
+                            reject(new Error("Failed to create blob from canvas."));
+                        }
+                    }, 'image/jpeg');
+                });
+
+                if (!blob) {
+                    console.error('Blob creation failed.');
+                    return; 
+                }
+
+                const url = await upload_image(blob);
+                    
+                // Draw the processed image onto the output canvas
+                const img = new Image();
+                img.onload = () => {
+                    outputContext.clearRect(0, 0, outputCanvas.width, outputCanvas.height); // Clear previous image
+                    outputContext.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
+                    // Now draw the output canvas onto the video feed
+                    context.drawImage(outputCanvas, 0, 0, canvas.width, canvas.height);
+                };
+                img.src = url;
+            } else {
+                console.warn('Video is not playing or dimensions are not available.');
+            }
+        }, 3000); // in milliseconds
+    }
+
+
+    uploadButton.addEventListener('click', async () => {
+        const file = fileInput.files[0];
+        if (!file) {
+            alert('Please select an image to upload');
+            return;
         }
 
-        // Event listeners
-        startDetectionBtn.addEventListener('click', startRealTimeDetection);
-        stopDetectionBtn.addEventListener('click', stopRealTimeDetection);
-    </script>
+        const url = await upload_image(file);  
+        outputContainer.innerHTML = `<h3>Detection Result:</h3><img src="${url}" alt="Detected Image" style="max-width: 100%;">`;
+       
+    });
+
+
+    startDetectionBtn.addEventListener('click', startRealTimeDetection);
+    stopDetectionBtn.addEventListener('click', stopRealTimeDetection);
+
+    videoFeed.addEventListener('loadeddata', () => {
+        sendVideoFrames();
+    });
+
+  </script>    
 </body>
 </html>
