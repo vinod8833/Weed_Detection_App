@@ -45,6 +45,9 @@ def detect_weeds(frame):
     
     return frame, crop_count, weed_count
 
+@app.route('/')
+def index():
+    return render_template('index.html')
 
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
@@ -71,9 +74,7 @@ def upload_image():
     else:
         return "Invalid file type", 400
 
-@app.route('/')
-def index():
-    return render_template('index.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', debug=True)
+    

@@ -6,10 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>Real-Time Weed Detection</title>
     
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.bootcss.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet">
     
-    <!-- Custom CSS for colorful styling -->
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -29,10 +27,9 @@
             margin-top: 12px;
         }
         .row {
-            display: flex;
-            justify-content: space-between;
             margin-left: 15px;
             margin-right: 15px;
+            margin-bottom: 2%;
         }
         .video-feed {
             flex-basis: calc(50% - 4px); 
@@ -43,7 +40,6 @@
             margin-right: 4px; 
         }
         .upload-section {
-            flex-basis: calc(50% - 4px); 
             background-color: rgba(0, 0, 0, 0.6);  
             border-radius: 10px;
             padding: 25px;
@@ -78,51 +74,78 @@
         .btn:hover {
             background-color: #45a049;
         }
+
+        input[type="file"]::-webkit-file-upload-button {
+            visibility: hidden;
+        }
+        
+        input[type="file"]::before {
+            content: 'Choose File';
+            display: inline-block;
+            background: #FD57AA; /* Pink background */
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        input[type="file"]:hover::before {
+            background-color: #E65EA2; 
+        }
+        
+        input[type="file"]:active::before {
+            background-color: #ff007f; 
+        }
+
+
+
+        
         footer {
             margin-top: 60px;
             text-align: center;
             color: gray;
         }
-        @media screen and (max-width: 768px) {
-            .row {
-                flex-direction: column; 
-            }
-            .video-feed, .upload-section {
-                flex-basis: 100%; 
-                margin: 0; 
-            }
-        }
+        
     </style>
 </head>
 
 <body>
 
-    <!-- Navbar -->
     <nav class="navbar navbar-dark bg-dark">
         <div class="container">
             <a class="navbar-brand" href="#">🌿 🌾 Weed Detection Application</a>
-            <button class="btn btn-outline-secondary my-2 my-sm-0" type="submit">contacts</button>
+            <button class="btn btn-outline-secondary my-2 my-sm-0" type="button" onclick="window.location.href='contacts.html'">Developers</button>
+
         </div>
     </nav>
 
-    <!-- Main Container -->
     <div class="container-fluid">
+        <div class="row">
+            <div id="upload-section"  class="col-md-12 upload-section">
+                <h2>Upload an Image for Detection</h2>
+                <p>Crop and weed detection is based on yolo model with custom training of images
+                </p>
+                <input type="file" id="file-input"  class="form-control-file" accept="image/*" style="max-width:40%; margin: 0 auto;">
+                <button id="upload-button" class="btn">Upload</button>
+                <div id="output-container" style="margin-top: 20px;"></div>
+                </div>
+        </div>
         
         <div class="row">
             <div class="col-md-6 col-12 video-feed">
-                <h1>Real-Time Weed Detection</h1>
+                <h3>Real-Time Weed Detection Input</h3>
                 <div>
                     <video id="videoFeed" class="img-fluid" autoplay playsinline></video>
                 </div>
                 <button class="btn" id="startDetectionBtn">Start Real-Time Detection</button>
                 <button class="btn" id="stopDetectionBtn" style="display: none;">Stop Real-Time Detection</button>
             </div>
-
-            <div id="upload-section"  class="col-md-6 col-12 upload-section">
-                <h2>Upload an Image for Detection</h2>
-                <input type="file" id="file-input"  class="form-control-file" accept="image/*">
-                <button id="upload-button" class="btn">Upload</button>
-                <div id="output-container" style="margin-top: 20px;"></div>
+            <div class="col-md-6 col-12 video-feed">
+                <h3>Real-Time Weed Detection Output</h3>
+                <video id="videoFeedOut" class="img-fluid" autoplay playsinline></video>
             </div>
         </div>
     </div>
@@ -137,6 +160,8 @@
 
         
     const videoFeed = document.getElementById('videoFeed');
+    const videoFeedOut = document.getElementById('videoFeedOut');
+
     const startDetectionBtn = document.getElementById('startDetectionBtn');
     const stopDetectionBtn = document.getElementById('stopDetectionBtn');
     let stream;
@@ -189,9 +214,9 @@
             console.log('Weeds detected:', weedCount);
 
             if (cropCount > 0) {
-               // const cropSound = new Audio('/static/audio/crop.mp3');  // Adjust the path
+               // const cropSound = new Audio('/static/audio/crop.mp3');  
                // cropSound.play();
-                speakText(`Total ${cropCount} weeds detected`);
+                speakText(`Total ${cropCount} crops detected`);
 
             }
             
@@ -250,16 +275,13 @@
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         
-        // Create another canvas for the transformed image
         const outputCanvas = document.createElement('canvas');
         const outputContext = outputCanvas.getContext('2d');
 
-        // Set the canvas size according to the video dimensions
         function updateCanvasSize() {
             canvas.width = videoFeed.videoWidth || 640;
             canvas.height = videoFeed.videoHeight || 480;
 
-            // Set the output canvas to the same size
             outputCanvas.width = canvas.width;
             outputCanvas.height = canvas.height;
         }
@@ -271,7 +293,7 @@
             // Check if video is playing and the dimensions are available
             if (!videoFeed.paused && !videoFeed.ended && videoFeed.videoWidth > 0 && videoFeed.videoHeight > 0) {
                 context.drawImage(videoFeed, 0, 0, canvas.width, canvas.height);
-                
+
                 // Create a blob from the canvas
                 const blob = await new Promise((resolve, reject) => {
                     canvas.toBlob((b) => {
@@ -297,12 +319,14 @@
                     outputContext.drawImage(img, 0, 0, outputCanvas.width, outputCanvas.height);
                     // Now draw the output canvas onto the video feed
                     context.drawImage(outputCanvas, 0, 0, canvas.width, canvas.height);
+                    videoFeedOut.srcObject = outputCanvas.captureStream();
+
                 };
                 img.src = url;
             } else {
                 console.warn('Video is not playing or dimensions are not available.');
             }
-        }, 3000); // in milliseconds
+        }, 1000); // in milliseconds
     }
 
 
