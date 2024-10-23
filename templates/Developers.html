@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Developers</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: radial-gradient(circle at top left, #f116b2, #1691f1); 
+            color: #333;
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            background-color: #ffffff;
+            padding: 15px;
+            border-radius: 30px;
+            box-shadow: 0px 20px 60px rgba(0, 0, 0, 0.15);
+            max-width: 1000px;
+            width: 90%;
+            height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Moving Weed Detection to the top */
+        .header {
+            position: sticky;
+            top: 0;
+            background-color: #f116b2; 
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            font-size: 30px;
+            font-weight: bold;
+            text-align: center;
+            z-index: 100;
+        }
+
+        .project-info {
+            margin-bottom: 20px;
+        }
+
+        .project-info p {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1691f1; 
+        }
+
+        .project-info img {
+            width: 110px;
+            height: auto;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .guide h3 {
+            font-size: 20px;
+            color: gray; 
+            margin-bottom: 10px;
+        }
+
+        .guide h2 {
+            font-size: 24px;
+            color: #f4b50c; 
+            font-weight: bold;
+        }
+
+        .students {
+            display: flex;
+            justify-content: space-around;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .student {
+            background-color: #C8F7D4;
+            padding: 20px;
+            border-radius: 15px;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+            width: 45%;
+        }
+
+        .student:hover {
+            transform: translateY(-5px);
+            box-shadow: 0px 8px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .student img {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin-bottom: 10px;
+            border: 4px solid #1691f1; 
+        }
+
+        .student h3 {
+            font-size: 22px;
+            color: #1691f1; 
+            margin-bottom: 8px;
+        }
+
+        .student p {
+            font-size: 16px;
+            color: #f116b2; 
+            margin-bottom: 10px;
+        }
+
+        .student-links a {
+            display: inline-block;
+            margin: 5px;
+            padding: 8px 16px;
+            background-color: #1691f1; 
+            color: #fff;
+            text-decoration: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+
+        .student-links a:hover {
+            background-color: #f116b2; 
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            color: gray; 
+        }
+
+        .footer a {
+            text-decoration: none;
+            color: #f116b2; 
+            font-weight: bold;
+            transition: color 0.3s ease;
+        }
+
+        .footer a:hover {
+            color: #f90644; 
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="header">
+            Weed Detection
+        </div>
+
+        <div class="project-info">
+            <p>Project ID: 31049</p>
+            <img src="/static/img/Nist.berhampur.logo.jpg" alt="NIST Logo">
+            <p><strong>By</strong></p>
+        </div>
+
+        <div class="guide">
+            <h3>Under the guidance of</h3>
+            <h2>Prof. Swetanjali Maharana</h2>
+        </div>
+
+        <!-- Students Section -->
+        <div class="students">
+            <!-- Student 1 -->
+            <div class="student">
+                <img src="/static/img/photo_2024-08-22_18-53-44__1___1_-removebg-preview.png" alt="M Sandeep Kumar">
+                <h3>M Sandeep Kumar</h3>
+                <p>Roll No: 202110306</p>
+                <p>Reg No: 2101202119</p>
+                <div class="student-links">
+                    <a href="https://www.linkedin.com/in/sandeep-kumar-maharana-7ab5672a1" target="_blank">LinkedIn</a>
+                    <a href="https://wa.me/919347227629" target="_blank">WhatsApp</a>
+                    <a href="https://github.com/sandeepkumarmaharana" target="_blank">GitHub</a>
+                </div>
+            </div>
+
+            <div class="student">
+                <img src="/static/img/photo_2024-08-22_18-43-25__1___2_-removebg-preview.png" alt="K Vinod Kumar">
+                <h3>K Vinod Kumar</h3>
+                <p>Roll No: 202112303</p>
+                <p>Reg No: 2101202309</p>
+                <div class="student-links">
+                    <a href="https://www.linkedin.com/in/k-vinod-kumar-686738266/" target="_blank">LinkedIn</a>
+                    <a href="https://wa.me/917606945133" target="_blank">WhatsApp</a>
+                    <a href="https://github.com/vinod8833" target="_blank">GitHub</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer for Project Score Code -->
+        <div class="footer">
+            <p>Project Score Code: <a href="https://github.com/project-31049" target="_blank">GitHub Link</a></p>
+        </div>
+    </div>
+
+</body>
+</html>

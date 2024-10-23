@@ -49,6 +49,10 @@ def detect_weeds(frame):
 def index():
     return render_template('index.html')
 
+@app.route('/templates/Developers.html')
+def developers():
+    return render_template('Developers.html')
+
 @app.route('/upload_image', methods=['POST'])
 def upload_image():
     if 'file' not in request.files:

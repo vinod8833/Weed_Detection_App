@@ -1,0 +1,160 @@
+body {
+    font-family: Arial, sans-serif;
+    padding-top: 20px;
+    background: linear-gradient(135deg, #c9ffbf, #ffafbd);
+    color: #fff;
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+}
+
+h1, h2 {
+    color: #fff;
+    text-align: center;
+    margin-bottom: 8px;
+}
+
+.container-fluid {
+    max-width: 1200px;
+    padding: 15px;
+    margin: 0 auto; 
+}
+
+.video-feed {
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    margin: 10px 0; /* Vertical margin for spacing */
+    flex: 1;
+    margin-right: 8px; /* Right margin for 4px gap */
+}
+
+/* Remove right margin for the last video feed to keep the layout tidy */
+.video-feed:last-child {
+    margin-right: 0;
+}
+
+
+.upload-section {
+    background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    padding: 20px; 
+    margin: 20px auto;
+}
+
+.upload-section input[type="file"]::-webkit-file-upload-button {
+    background-color: #FD57AA;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+#upload-button {
+    background-color: #FFD700; 
+    color: rgb(0, 0, 0);
+    border: none;
+    padding: 10px 20px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    margin: 20px auto; 
+}
+
+#upload-button:hover {
+    background-color: #E5C100; 
+}
+
+img {
+    border: 3px solid #fff;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 8px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.form-control-file {
+    display: inline-block;
+    width: 100%;
+    max-width: 40%;
+    background-color: #c9f3c5;
+    color: #333;
+    border: none;
+    border-radius: 18px;
+    padding: 10px;
+    cursor: pointer;
+}
+
+input[type="file"]:hover::before {
+    background-color: #E65EA2;
+}
+
+input[type="file"]:active::before {
+    background-color: #ff007f;
+}
+
+.btn {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 5px 10px;
+    border-radius: 8px;
+    margin-top: 5px;
+    transition: background-color 0.3s;
+}
+
+.btn:hover {
+    background-color: #45a049;
+}
+
+footer {
+    margin-top: 60px;
+    text-align: center;
+    color: gray;
+}
+
+.container-fluid {
+    padding: 0 15px; 
+}
+
+.flex-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+}
+
+@media (max-width: 768px) {
+    .video-feed, .upload-section {
+        flex: 1 0 100%; 
+        margin: 10px 0; 
+    }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    .video-feed {
+        flex: 1 0 calc(50% - 20px); 
+    }
+    
+    .upload-section {
+        width: 90%; 
+        margin: 20px auto;
+    }
+}
+
+@media (min-width: 1201px) {
+    .video-feed {
+        flex: 1 0 calc(33% - 20px); 
+    }
+    
+    .upload-section {
+        width: 60%; 
+        margin: 20px auto;
+    }
+}

@@ -16,4 +16,9 @@ https://medium.com/@esrasoylu/data-labeling-in-images-object-detection-applicati
 
 weed_detection_application
 
+run 
+
+ngrok config add-authtoken 2nSpP9MbNUwMhghFPjwpg5cYy8b_4JP5GwSX32cKDbmLvSeDx
+
+ngrok http 5000
 
