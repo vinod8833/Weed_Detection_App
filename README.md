@@ -30,3 +30,4 @@ ngrok http http://localhost:5000
 # Weed_Detection
 # Weed_Detection
 # Weed_Detection
+# Weed_Detection_App
