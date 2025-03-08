@@ -21,13 +21,3 @@ weed_detection_application
 
 run 
 
-ngrok config add-authtoken 2tnliX7BXJseqn3vgsTekmBxOF7_4kvjPHV4HFkWhb9qd3vb3
-
-
-ngrok http http://localhost:5000
-# weed_detection_app
-# Weed_Detection_App
-# Weed_Detection
-# Weed_Detection
-# Weed_Detection
-# Weed_Detection_App
