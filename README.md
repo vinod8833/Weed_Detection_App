@@ -21,3 +21,11 @@ weed_detection_application
 
 run 
 
+![PC View](https://github.com/vinod8833/Weed_Detection_App/blob/main/static/img2/Screenshot%20from%202025-03-04%2000-25-45.png)
+
+![Mobile View](https://github.com/vinod8833/Weed_Detection_App/blob/main/static/img2/photo_2025-03-07_22-33-19.jpg)
+
+
+# Contributors
+
+Vinod Kumar
